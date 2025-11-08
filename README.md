@@ -27,6 +27,11 @@ The figures show the estimation of all two local paulis of 3 qubit GHZ state and
 ![](fidelity_cluster_state_global_clifford_5bit.png)
 
 This figure shows the infidelity between the state obtained from classical shodow using n qubit random clifford and the target state i.e the cluster state. We can see that the infelity scales according to the number of samples. This cannot be efficiently done using random tensor clifford due to the non-locality of cluster states.
+
+![](n_100_total_shots.png)
+
+This figure shows the relationship between the total number of shots and the target variance for the n = 100 qubit GHZ state. The figure is obtained from a stabilizer Clifford circuit simulation with n = 100 qubits. From this result, we can see that the CST achieves an efficiency improvement by a factor of 1000.
+
 # Member
 @koizumiyuki
 @makkuroym-ops
