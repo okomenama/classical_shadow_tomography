@@ -1,5 +1,6 @@
 # Classical shadow tomography
 Team: QFF foil
+
 Quantum Fall Festival 2025.
 
 # Abstract
@@ -7,7 +8,7 @@ Classical Shadow Tomography (CST) is a modern quantum algorithm designed to pred
 
 We demonstrated that CST achives efficient estimate of physical quantities of a quantum state through two intrigueing applications. First, we applied CST and QST to GHZ states to estimate expectations of any K-local Pauli observable and show that CST achives more acurate estimate of the local observable expectation with small number of shots than QST. We also show that QST estimate variance does not depend on the number of qubits and only depnds on locality of observable. 
 
-# メンバー
+# Member
 @koizumiyuki
 @makkuroym-ops
 @TakeruUTSUMI
@@ -15,5 +16,5 @@ We demonstrated that CST achives efficient estimate of physical quantities of a 
 @okomenama
 @ransan102
 
-# メンター
+# Mentor
 @Keisuke Murota
