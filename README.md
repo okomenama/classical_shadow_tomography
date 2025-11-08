@@ -3,6 +3,8 @@ Quantum Fall Festival 2025.
 
 Classical Shadow Tomography (CST) is a modern quantum algorithm designed to predict numerous physical quantities, or observables, of a quantum state using significantly fewer measurements than traditional methods. While Quantum State Tomography (QST) attempts to reconstruct the entire density matrix ($\rho$) of the quantum state and requires an exponential number of measurements, CST avoids the comprehensive reconstruction by in prior limiting calculated physical quantitie and only requires polynomial number of measurements, which leads to an efficient estimation of the physical quantities. This classical representation can be post-processed at any time to retrieve the values of various observables that meet specific conditions.
 
+We demonstrated that CST achives efficient estimate of physical quantities of a quantum state through two intrigueing applications. 
+
 # メンバー
 @koizumiyuki
 @makkuroym-ops
