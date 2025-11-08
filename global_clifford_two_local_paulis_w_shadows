@@ -1,0 +1,162 @@
+import numpy as np
+from scipy.linalg import sqrtm
+import matplotlib.pyplot as plt
+from itertools import combinations, product
+from qiskit import QuantumCircuit
+from qiskit.quantum_info import random_clifford, Operator, Pauli
+import time
+
+
+# ---------------- Utility functions ----------------
+
+def random_global_clifford_numpy(n_qubits):
+    """Generate a random *global* n-qubit Clifford as a NumPy unitary."""
+    C = random_clifford(n_qubits)
+    return Operator(C).data
+
+
+def measure_comp_sample(rho):
+    """Sample a computational-basis outcome from ρ."""
+    probs = np.real_if_close(np.diag(rho))
+    probs = np.maximum(probs, 0)
+    probs /= probs.sum()
+    return np.random.choice(len(probs), p=probs)
+
+
+def projector_on_outcome(b, d):
+    P = np.zeros((d, d), dtype=complex)
+    P[b, b] = 1.0
+    return P
+
+
+def reconstruct_from_samples_global_cliff(U_list, outcomes, d):
+    """Global-Clifford classical-shadow estimator."""
+    avg = np.zeros((d, d), dtype=complex)
+    for U, b in zip(U_list, outcomes):
+        P = projector_on_outcome(b, d)
+        avg += U.conj().T @ P @ U
+    avg /= len(U_list)
+    return (d + 1) * avg - np.eye(d, dtype=complex)
+
+
+# ---------------- State and Observables ----------------
+
+def ghz_state_density(n_qubits):
+    """Return the density matrix of n-qubit GHZ state."""
+    d = 2 ** n_qubits
+    psi = np.zeros((d, 1), dtype=complex)
+    psi[0, 0] = 1 / np.sqrt(2)
+    psi[-1, 0] = 1 / np.sqrt(2)
+    return psi @ psi.conj().T
+
+
+def two_local_paulis(n_qubits):
+    """
+    Generate all 2-local Pauli operators (XX, XY, XZ, YX, YY, YZ, ZX, ZY, ZZ)
+    for all distinct pairs of qubits.
+    Returns a list of (i,j,label,operator).
+    """
+    single = ["X", "Y", "Z"]
+    paulis = []
+    for (i, j) in combinations(range(n_qubits), 2):
+        for p1, p2 in product(single, single):
+            label = ["I"] * n_qubits
+            label[i] = p1
+            label[j] = p2
+            op = Pauli("".join(label[::-1])).to_matrix()
+            paulis.append(((i, j), p1 + p2, op))
+    return paulis
+
+
+# ---------------- Main function ----------------
+
+def ghz_shadow_pauli_variance_global(
+    n_qubits, sample_list, n_bootstrap=100, seed=None, plot=True
+):
+    """
+    Compute the variance range of all 2-local Pauli expectation errors
+    between shadow-estimated and true GHZ state using *global* n-qubit Cliffords.
+    
+    Returns:
+        mean_var, std_var : arrays
+        all_var_range : list of (min, max) for each Ns
+        all_U, all_b, all_rho_hat : lists of unitaries, outcomes, estimated states
+    """
+    if seed is not None:
+        np.random.seed(seed)
+
+    d = 2 ** n_qubits
+    rho_true = ghz_state_density(n_qubits)
+    pauli_ops = two_local_paulis(n_qubits)
+
+    mean_var, std_var = [], []
+    all_var_range = []
+    all_U, all_b, all_rho_hat = [], [], []
+
+    for Ns in sample_list:
+        # --- Generate base samples ---
+        U_list, outcomes = [], []
+        for _ in range(Ns):
+            U = random_global_clifford_numpy(n_qubits)
+            rho_rot = U @ rho_true @ U.conj().T
+            b = measure_comp_sample(rho_rot)
+            U_list.append(U)
+            outcomes.append(b)
+
+        # --- Bootstrap resampling ---
+        pauli_var_list = []
+        rho_hats = []
+        for _ in range(n_bootstrap):
+            idxs = np.random.choice(Ns, Ns, replace=True)
+            U_resamp = [U_list[i] for i in idxs]
+            b_resamp = [outcomes[i] for i in idxs]
+            rho_hat = reconstruct_from_samples_global_cliff(U_resamp, b_resamp, d)
+            rho_hats.append(rho_hat)
+
+            local_vars = []
+            for (_, label, op) in pauli_ops:
+                true_val = np.real(np.trace(rho_true @ op))
+                est_val = np.real(np.trace(rho_hat @ op))
+                local_vars.append((est_val - true_val) ** 2)
+            pauli_var_list.append(local_vars)
+
+        pauli_var_array = np.array(pauli_var_list)  # shape (n_bootstrap, n_paulis)
+        pauli_var_mean = np.mean(pauli_var_array, axis=0)
+        min_var, max_var = np.min(pauli_var_mean), np.max(pauli_var_mean)
+        mean_var.append(np.mean(pauli_var_mean))
+        std_var.append(np.std(pauli_var_mean))
+        all_var_range.append((min_var, max_var))
+        all_U.append(np.array(U_list))
+        all_b.append(np.array(outcomes))
+        all_rho_hat.append(np.array(rho_hats))
+
+        print(
+            f"Ns={Ns:<6d} | var range=({min_var:.3e}, {max_var:.3e}) | mean={mean_var[-1]:.3e}"
+        )
+
+    # --- Plot ---
+    if plot:
+        Ns_arr = np.array(sample_list)
+        var_min = [v[0] for v in all_var_range]
+        var_max = [v[1] for v in all_var_range]
+
+        plt.figure(figsize=(6, 4))
+        plt.fill_between(Ns_arr, var_min, var_max, alpha=0.3, label="Variance range")
+        plt.plot(Ns_arr, mean_var, "o-", label="Mean variance", color="C0")
+        plt.xscale("log")
+        plt.yscale("log")
+        plt.xlabel("Number of samples (Ns)")
+        plt.ylabel("Variance of 2-local Pauli expectations")
+        plt.title(f"GHZ_{n_qubits}: 2-local Pauli variance (global Cliffords)")
+        plt.grid(True, which="both", ls="--")
+        plt.legend()
+        plt.show()
+
+    return (
+        np.array(mean_var),
+        np.array(std_var),
+        np.array(all_var_range),
+        all_U,
+        all_b,
+        all_rho_hat,
+    )
