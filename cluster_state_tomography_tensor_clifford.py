@@ -47,7 +47,7 @@ def reconstruct_from_samples_local_cliff(U_list, outcomes, d):
         avg += U.conj().T @ P @ U
     avg /= len(U_list)
     # Inverse map for d-dim full Hilbert space
-    return (d + 1) * avg - np.eye(d, dtype=complex)
+    return (2 + 1) * avg - np.eye(d, dtype=complex)
 
 # Here we use 1D cluster state as an example for tomography.
 # You can update here for any kind of state for tomography.
