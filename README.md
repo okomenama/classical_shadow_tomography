@@ -15,6 +15,10 @@ We demonstrated that CST achives efficient estimate of physical quantities of a 
 
 - Low_Pauli_rank_stae_CST_Utsumi.ipynb : Analysis about efficiency Classical Shadow Tomography when density matrix of quantum system has a low rank.
 
+# Result
+![CST circuit diagram](ghz3_global_clifford.png)
+
+
 # Member
 @koizumiyuki
 @makkuroym-ops
