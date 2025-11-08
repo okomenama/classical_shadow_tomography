@@ -20,7 +20,7 @@ We demonstrated that CST achives efficient estimate of physical quantities of a 
 
 ![The estimation of 5 qubit GHZ state](ghz5_globa;_clifford.png)
 
-
+The figures show the estimation of all two local paulis of 3 qubit GHZ state and 5 qubit GHZ state using n qubit clifford gate classical shadow. The lines respresent maximum, average and minimum of variance from true values out of all possobile two local paulis. We can see that the scaling does not change with repect to the number of qubits, which corraborates the theory.
 # Member
 @koizumiyuki
 @makkuroym-ops
