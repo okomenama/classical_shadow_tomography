@@ -15,6 +15,8 @@ We demonstrated that CST achives efficient estimate of physical quantities of a 
 
 - Low_Pauli_rank_stae_CST_Utsumi.ipynb : Analysis about efficiency Classical Shadow Tomography when density matrix of quantum system has a low rank.
 
+- CS_stim.ipynb: Stabilizer circuit simulation of Classical shadow tomography
+
 # Result
 ![The estimation of all two local paulis of 3 qubit GHZ state. The lines respresent maximum, average and minimum of variance from true values out of all possobile two local paulis](ghz3_global_clifford.png)
 
